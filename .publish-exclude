@@ -1,0 +1,6 @@
+# 发布时排除的目录/文件
+modules/community/
+services/cloud-*/
+docs/cloud-deploy-internal.md
+scripts/publish.ts
+.publish-exclude
