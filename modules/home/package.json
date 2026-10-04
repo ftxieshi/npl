@@ -1,0 +1,15 @@
+{
+  "name": "@npl/home",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": { "build": "vite build", "dev": "vite", "test": "vitest run" },
+  "dependencies": { "@npl/shared": "workspace:*" },
+  "peerDependencies": { "solid-js": "^1.9.0" },
+  "sideEffects": false,
+  "exports": { ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" } },
+  "devDependencies": {
+    "vite": "^8.3.0", "vite-plugin-solid": "^2.11.14",
+    "vite-plugin-dts": "^5.1.1", "typescript": "~6.0.2"
+  }
+}

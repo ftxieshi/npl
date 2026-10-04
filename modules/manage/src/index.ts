@@ -1,0 +1,2 @@
+// @npl/manage
+export {};

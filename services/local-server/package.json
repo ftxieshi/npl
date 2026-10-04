@@ -1,0 +1,6 @@
+{
+  "name": "@npl/local-server",
+  "private": true,
+  "version": "0.0.0",
+  "scripts": { "build": "cargo build --release" }
+}

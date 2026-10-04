@@ -1,0 +1,24 @@
+{
+  "name": "@npl/bootstrap",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": { "dev": "vite", "build": "vite build", "preview": "vite preview", "test": "vitest run" },
+  "dependencies": {
+    "@npl/module-registry": "workspace:*",
+    "@npl/navigation": "workspace:*",
+    "@npl/router": "workspace:*",
+    "@npl/layout": "workspace:*",
+    "@npl/icons": "workspace:*",
+    "@npl/engine-loader": "workspace:*",
+    "@npl/shared": "workspace:*",
+    "solid-js": "^1.9.15"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "typescript": "~6.0.2",
+    "vite": "^8.3.0",
+    "vite-plugin-solid": "^2.11.14",
+    "unocss": "^66.10.5"
+  }
+}
