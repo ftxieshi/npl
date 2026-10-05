@@ -9,7 +9,17 @@
     "skipLibCheck": true,
     "noEmit": true,
     "esModuleInterop": true,
-    "isolatedModules": true
+    "isolatedModules": true,
+    "baseUrl": ".",
+    "paths": {
+      "@npl/shared": ["core/shared/src"],
+      "@npl/router": ["core/router/src"],
+      "@npl/module-registry": ["core/module-registry/src"],
+      "@npl/navigation": ["core/navigation/src"],
+      "@npl/layout": ["core/layout/src"],
+      "@npl/icons": ["core/icons/src"],
+      "@npl/engine-loader": ["core/engine-loader/src"]
+    }
   },
   "include": ["modules/**/*", "core/**/*"],
   "exclude": ["node_modules", "dist"]

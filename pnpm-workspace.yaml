@@ -1,4 +1,8 @@
-nodeLinker: hoisted
+nodeLinker: isolated
+packageImportMethod: copy
+
+allowBuilds:
+  esbuild: true
 
 packages:
   - "modules/*"
