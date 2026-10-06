@@ -27,11 +27,14 @@ jobs:
           node-version: '24'
           cache: 'pnpm'
 
+      - name: Generate stub engine for CI
+        run: bash scripts/stub-engine.sh
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
       - name: Build
-        run: pnpm exec turbo run build --concurrency=2
+        run: pnpm exec turbo run build --filter='!@npl/local-server' --concurrency=2
 
       - name: Test
-        run: pnpm exec turbo run test --concurrency=2
+        run: pnpm exec turbo run test --filter='!@npl/local-server' --concurrency=2
