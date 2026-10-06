@@ -3,6 +3,7 @@ packageImportMethod: copy
 
 allowBuilds:
   esbuild: true
+  workerd: true
 
 packages:
   - "apps/*"
