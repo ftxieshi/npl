@@ -7,3 +7,8 @@ playwright-report/
 .env
 *.env
 !.env.example
+
+# 下界引擎产物（从私有仓库同步，不入公开仓库）
+vendor/nether-engine/*.wasm
+vendor/nether-engine/*.js
+vendor/nether-engine/*.d.ts

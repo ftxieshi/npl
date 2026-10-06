@@ -5,6 +5,8 @@ allowBuilds:
   esbuild: true
 
 packages:
+  - "apps/*"
+  - "packages/*"
   - "modules/*"
-  - "core/*"
   - "services/*"
+  - "vendor/*"

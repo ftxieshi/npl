@@ -1,0 +1,14 @@
+{
+  "name": "nether-engine",
+  "type": "module",
+  "version": "0.1.0",
+  "description": "下界引擎 WASM 产物（同步自 ../nether-engine/pkg）",
+  "private": true,
+  "files": [
+    "nether_engine_bg.wasm",
+    "nether_engine.js",
+    "nether_engine.d.ts"
+  ],
+  "main": "nether_engine.js",
+  "types": "nether_engine.d.ts"
+}
