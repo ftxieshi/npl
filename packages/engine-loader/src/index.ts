@@ -1,7 +1,7 @@
 import init, {
   npl_abi_version,
   npl_init,
-  npl_execute,
+  npl_compile_class,
   npl_dispose,
 } from 'nether-engine';
 import wasmUrl from 'nether-engine/nether_engine_bg.wasm?url';
@@ -37,7 +37,7 @@ export function createEngineLoader(): EngineLoader {
     cached = {
       abiVersion: () => npl_abi_version(),
       init: (cfg?: ArrayBuffer) => npl_init(0, cfg?.byteLength ?? 0),
-      execute: (bytecode: ArrayBuffer) => npl_execute(0, bytecode.byteLength),
+      compileClass: (classBytes: Uint8Array) => npl_compile_class(classBytes),
       dispose: () => {
         npl_dispose();
         cached = null;
