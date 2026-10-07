@@ -3,37 +3,103 @@ import { bootstrap } from './bootstrap';
 import { createEngineLoader } from '@npl/engine-loader';
 import type { NavItem } from '@npl/shared';
 
-/**
- * 内联的 `public class Test { public static int add(int a, int b) { return a + b; } }`
- * 的 `.class` 字节。用于验证完整的编译-执行链路。
- */
 function buildAddClass(): Uint8Array {
   return new Uint8Array([
-    0xCA, 0xFE, 0xBA, 0xBE, 0x00, 0x00, 0x00, 0x34, // magic + version
-    0x00, 0x08, // cp count
-    0x01, 0x00, 0x04, 0x54, 0x65, 0x73, 0x74, // #1 "Test"
-    0x07, 0x00, 0x01, // #2 Class #1
-    0x01, 0x00, 0x10, // #3 Utf8 len 16
+    0xCA, 0xFE, 0xBA, 0xBE, 0x00, 0x00, 0x00, 0x34,
+    0x00, 0x08,
+    0x01, 0x00, 0x04, 0x54, 0x65, 0x73, 0x74,
+    0x07, 0x00, 0x01,
+    0x01, 0x00, 0x10,
     0x6A, 0x61, 0x76, 0x61, 0x2F, 0x6C, 0x61, 0x6E,
-    0x67, 0x2F, 0x4F, 0x62, 0x6A, 0x65, 0x63, 0x74, // "java/lang/Object"
-    0x07, 0x00, 0x03, // #4 Class #3
-    0x01, 0x00, 0x03, 0x61, 0x64, 0x64, // #5 "add"
-    0x01, 0x00, 0x05, 0x28, 0x49, 0x49, 0x29, 0x49, // #6 "(II)I"
-    0x01, 0x00, 0x04, 0x43, 0x6F, 0x64, 0x65, // #7 "Code"
-    0x00, 0x21, 0x00, 0x02, 0x00, 0x04, // access, this, super
-    0x00, 0x00, // interfaces
-    0x00, 0x00, // fields
-    0x00, 0x01, // methods = 1
-    0x00, 0x09, 0x00, 0x05, 0x00, 0x06, // public static add(II)I
-    0x00, 0x01, // 1 attribute
-    0x00, 0x07, 0x00, 0x00, 0x00, 0x10, // Code, length 16
-    0x00, 0x02, 0x00, 0x02, // max_stack=2, max_locals=2
-    0x00, 0x00, 0x00, 0x04, // code length 4
-    0x1A, 0x1B, 0x60, 0xAC, // iload_0; iload_1; iadd; ireturn
-    0x00, 0x00, // exception table
-    0x00, 0x00, // method attributes
-    0x00, 0x00, // class attributes
+    0x67, 0x2F, 0x4F, 0x62, 0x6A, 0x65, 0x63, 0x74,
+    0x07, 0x00, 0x03,
+    0x01, 0x00, 0x03, 0x61, 0x64, 0x64,
+    0x01, 0x00, 0x05, 0x28, 0x49, 0x49, 0x29, 0x49,
+    0x01, 0x00, 0x04, 0x43, 0x6F, 0x64, 0x65,
+    0x00, 0x21, 0x00, 0x02, 0x00, 0x04,
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x01,
+    0x00, 0x09, 0x00, 0x05, 0x00, 0x06,
+    0x00, 0x01,
+    0x00, 0x07, 0x00, 0x00, 0x00, 0x10,
+    0x00, 0x02, 0x00, 0x02,
+    0x00, 0x00, 0x00, 0x04,
+    0x1A, 0x1B, 0x60, 0xAC,
+    0x00, 0x00,
+    0x00, 0x00,
+    0x00, 0x00,
   ]);
+}
+
+/**
+ * `public static int max(int a, int b) { return a < b ? b : a; }`
+ *
+ * 字节码：
+ *   0: iload_0
+ *   1: iload_1
+ *   2: if_icmplt 7
+ *   5: iload_0
+ *   6: ireturn
+ *   7: iload_1
+ *   8: ireturn
+ */
+function buildMaxClass(): Uint8Array {
+  return new Uint8Array([
+    // magic + version
+    0xCA, 0xFE, 0xBA, 0xBE, 0x00, 0x00, 0x00, 0x34,
+    // cp count = 8
+    0x00, 0x08,
+    // #1 "Test"
+    0x01, 0x00, 0x04, 0x54, 0x65, 0x73, 0x74,
+    // #2 Class #1
+    0x07, 0x00, 0x01,
+    // #3 "java/lang/Object"
+    0x01, 0x00, 0x10,
+    0x6A, 0x61, 0x76, 0x61, 0x2F, 0x6C, 0x61, 0x6E,
+    0x67, 0x2F, 0x4F, 0x62, 0x6A, 0x65, 0x63, 0x74,
+    // #4 Class #3
+    0x07, 0x00, 0x03,
+    // #5 "max"
+    0x01, 0x00, 0x03, 0x6D, 0x61, 0x78,
+    // #6 "(II)I"
+    0x01, 0x00, 0x05, 0x28, 0x49, 0x49, 0x29, 0x49,
+    // #7 "Code"
+    0x01, 0x00, 0x04, 0x43, 0x6F, 0x64, 0x65,
+    // access, this, super
+    0x00, 0x21, 0x00, 0x02, 0x00, 0x04,
+    // interfaces
+    0x00, 0x00,
+    // fields
+    0x00, 0x00,
+    // methods = 1
+    0x00, 0x01,
+    // method: public static max(II)I
+    0x00, 0x09, 0x00, 0x05, 0x00, 0x06,
+    // attrs = 1
+    0x00, 0x01,
+    // Code, length 21 (0x15)
+    0x00, 0x07, 0x00, 0x00, 0x00, 0x15,
+    // max_stack = 2
+    0x00, 0x02,
+    // max_locals = 2
+    0x00, 0x02,
+    // code_length = 9
+    0x00, 0x00, 0x00, 0x09,
+    // iload_0; iload_1; if_icmplt +5; iload_0; ireturn; iload_1; ireturn
+    0x1A, 0x1B, 0xA1, 0x00, 0x05, 0x1A, 0xAC, 0x1B, 0xAC,
+    // exception_table_length = 0
+    0x00, 0x00,
+    // attributes_count = 0
+    0x00, 0x00,
+    // class attributes = 0
+    0x00, 0x00,
+  ]);
+}
+
+interface RunResult {
+  name: string;
+  result: string;
 }
 
 export function App() {
@@ -42,7 +108,7 @@ export function App() {
   const [ready, setReady] = createSignal(false);
   const [engineAbi, setEngineAbi] = createSignal<number | null>(null);
   const [engineError, setEngineError] = createSignal<string | null>(null);
-  const [compileResult, setCompileResult] = createSignal<string | null>(null);
+  const [results, setResults] = createSignal<RunResult[]>([]);
 
   onMount(async () => {
     const { registry, navigation } = await bootstrap();
@@ -58,35 +124,40 @@ export function App() {
       const engine = await loader.load();
       setEngineAbi(engine.abiVersion());
 
-      // 编译 .class → WASM
-      const classBytes = buildAddClass();
-      const wasmBytes = engine.compileClass(classBytes);
-
-      if (wasmBytes.length === 0) {
-        setCompileResult('编译失败：返回空 WASM');
-        return;
+      // 1. add(2, 3)
+      const addWasm = engine.compileClass(buildAddClass());
+      if (addWasm.length > 0 && WebAssembly.validate(addWasm)) {
+        const mod = await WebAssembly.compile(addWasm);
+        const inst = await WebAssembly.instantiate(mod, {});
+        const exports = inst.exports as Record<string, unknown>;
+        const addFn = Object.entries(exports).find(([n]) => n.includes('add'))?.[1];
+        if (typeof addFn === 'function') {
+          const r = (addFn as (a: number, b: number) => number)(2, 3);
+          setResults((prev) => [...prev, { name: 'add(2, 3)', result: String(r) }]);
+        }
       }
 
-      // 验证 WASM 合法性
-      if (!WebAssembly.validate(wasmBytes)) {
-        setCompileResult('编译产出非法 WASM');
-        return;
+      // 2. max(7, 3) 和 max(2, 9)
+      const maxWasm = engine.compileClass(buildMaxClass());
+      console.log('maxWasm.length =', maxWasm.length);
+      const maxValid = maxWasm.length > 0 && WebAssembly.validate(maxWasm);
+      console.log('maxWasm valid =', maxValid);
+      if (maxValid) {
+        const mod = await WebAssembly.compile(maxWasm);
+        const inst = await WebAssembly.instantiate(mod, {});
+        const exports = inst.exports as Record<string, unknown>;
+        console.log('maxWasm exports =', Object.keys(exports));
+        const maxFn = Object.entries(exports).find(([n]) => n.includes('max'))?.[1];
+        console.log('maxFn type =', typeof maxFn);
+        if (typeof maxFn === 'function') {
+          const f = maxFn as (a: number, b: number) => number;
+          setResults((prev) => [...prev, { name: 'max(7, 3)', result: String(f(7, 3)) }]);
+          setResults((prev) => [...prev, { name: 'max(2, 9)', result: String(f(2, 9)) }]);
+        }
+      } else {
+        // 打印前 16 字节帮助诊断
+        console.error('maxWasm first 16 bytes:', Array.from(maxWasm.slice(0, 16)));
       }
-
-      // 实例化并执行
-      const module = await WebAssembly.compile(wasmBytes);
-      const instance = await WebAssembly.instantiate(module, {});
-      const exports = instance.exports as Record<string, unknown>;
-
-      // 找到导出的 add 函数（名称格式：Test.add(II)I）
-      const addFn = Object.entries(exports).find(([name]) => name.includes('add'))?.[1];
-      if (typeof addFn !== 'function') {
-        setCompileResult(`未找到 add 函数，导出：${Object.keys(exports).join(', ')}`);
-        return;
-      }
-
-      const result = (addFn as (a: number, b: number) => number)(2, 3);
-      setCompileResult(`add(2, 3) = ${result}`);
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
       setEngineError(msg);
@@ -97,13 +168,21 @@ export function App() {
     <div class="h-screen flex flex-col bg-neutral-900 text-white">
       <Show when={ready()} fallback={<div class="flex-1 flex items-center justify-center">Loading…</div>}>
         <main class="flex-1 overflow-auto flex items-center justify-center">
-          <div class="text-center space-y-3">
+          <div class="text-center space-y-4">
             <Show when={engineAbi() !== null}>
               <div class="text-2xl font-semibold">下界引擎已就绪</div>
               <div class="text-sm text-neutral-400">ABI 版本：{engineAbi()}</div>
             </Show>
-            <Show when={compileResult() !== null}>
-              <div class="text-lg text-green-400 font-mono">{compileResult()}</div>
+            <Show when={results().length > 0}>
+              <div class="space-y-2 mt-4">
+                <For each={results()}>
+                  {(r) => (
+                    <div class="text-lg text-green-400 font-mono">
+                      {r.name} = {r.result}
+                    </div>
+                  )}
+                </For>
+              </div>
             </Show>
             <Show when={engineError() !== null}>
               <div class="text-lg text-red-400">引擎加载失败：{engineError()}</div>
