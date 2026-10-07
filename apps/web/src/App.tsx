@@ -354,6 +354,17 @@ function buildPointClass(): Uint8Array {
   return bytes;
 }
 
+const INSTANCE_B64 = "yv66vgAAADQAFAEABFRlc3QHAAEBABBqYXZhL2xhbmcvT2JqZWN0BwADAQAFdmFsdWUBAAFJDAAFAAYJAAIABwEACHNldFZhbHVlAQAEKEkpVgwACQAKCgACAAsBAAhnZXRWYWx1ZQEAAygpSQwADQAOCgACAA8BAAR0ZXN0AQADKClJAQAEQ29kZQAhAAIABAAAAAEAAAAFAAYAAAADAAEACQAKAAEAEwAAABIAAgACAAAABiobtQAIsQAAAAAAAQANAA4AAQATAAAAEQABAAEAAAAFKrQACKwAAAAAAAkAEQASAAEAEwAAABsAAgABAAAAD7sAAksqECq2AAwqtgAQrAAAAAAAAA==";
+
+function buildInstanceClass(): Uint8Array {
+  const binary = atob(INSTANCE_B64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
 interface RunResult {
   name: string;
   result: string;
@@ -504,6 +515,21 @@ export function App() {
         }
       } else {
         console.error('pointWasm invalid, length =', pointWasm.length);
+      }
+
+      // 8. 实例方法调用
+      const instanceWasm = engine.compileClass(buildInstanceClass());
+      if (instanceWasm.length > 0 && WebAssembly.validate(instanceWasm)) {
+        const mod = await WebAssembly.compile(instanceWasm);
+        const inst = await WebAssembly.instantiate(mod, {});
+        const exports = inst.exports as Record<string, unknown>;
+        const testFn = Object.entries(exports).find(([n]) => n.includes('test'))?.[1];
+        if (typeof testFn === 'function') {
+          const r = (testFn as () => number)();
+          setResults((prev) => [...prev, { name: 'Instance.test()', result: String(r) }]);
+        }
+      } else {
+        console.error('instanceWasm invalid, length =', instanceWasm.length);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
