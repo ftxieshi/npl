@@ -332,6 +332,17 @@ function buildSumArrayClass(): Uint8Array {
   return bytes;
 }
 
+const COUNTER_B64 = "yv66vgAAADQADgEABFRlc3QHAAEBABBqYXZhL2xhbmcvT2JqZWN0BwADAQAFdmFsdWUBAAFJDAAFAAYJAAIABwEAA3NldAEABChJKVYBAANnZXQBAAMoKUkBAARDb2RlACEAAgAEAAAAAQAIAAUABgAAAAIACQAJAAoAAQANAAAAEQABAAEAAAAFGrMACLEAAAAAAAkACwAMAAEADQAAABAAAQAAAAAABLIACKwAAAAAAAA=";
+
+function buildCounterClass(): Uint8Array {
+  const binary = atob(COUNTER_B64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
 interface RunResult {
   name: string;
   result: string;
@@ -442,6 +453,31 @@ export function App() {
         }
       } else {
         console.error('sumArrayWasm invalid, length =', sumArrayWasm.length);
+      }
+
+      // 6. Counter 静态字段
+      const counterWasm = engine.compileClass(buildCounterClass());
+      if (counterWasm.length > 0 && WebAssembly.validate(counterWasm)) {
+        const mod = await WebAssembly.compile(counterWasm);
+        const inst = await WebAssembly.instantiate(mod, {});
+        const exports = inst.exports as Record<string, unknown>;
+        const setFn = Object.entries(exports).find(([n]) => n.includes('set'))?.[1];
+        const getFn = Object.entries(exports).find(([n]) => n.includes('get'))?.[1];
+        if (typeof setFn === 'function' && typeof getFn === 'function') {
+          const s = setFn as (v: number) => void;
+          const g = getFn as () => number;
+          const before = g();
+          s(42);
+          const after = g();
+          setResults((prev) => [
+            ...prev,
+            { name: 'counter.get() 初始', result: String(before) },
+            { name: 'counter.set(42)', result: '已设置' },
+            { name: 'counter.get() 之后', result: String(after) },
+          ]);
+        }
+      } else {
+        console.error('counterWasm invalid, length =', counterWasm.length);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
