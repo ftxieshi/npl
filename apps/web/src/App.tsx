@@ -343,6 +343,17 @@ function buildCounterClass(): Uint8Array {
   return bytes;
 }
 
+const POINT_B64 = "yv66vgAAADQADwEABFRlc3QHAAEBABBqYXZhL2xhbmcvT2JqZWN0BwADAQABeAEAAUkBAAF5AQAEdGVzdAEAAygpSQEABENvZGUMAAUABgkAAgALDAAHAAYJAAIADQAhAAIABAAAAAIAAAAFAAYAAAAAAAcABgAAAAEACQAIAAkAAQAKAAAAJgACAAEAAAAauwACSyoQCrUADCoQFLUADiq0AAwqtAAOYKwAAAAAAAA=";
+
+function buildPointClass(): Uint8Array {
+  const binary = atob(POINT_B64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
 interface RunResult {
   name: string;
   result: string;
@@ -478,6 +489,21 @@ export function App() {
         }
       } else {
         console.error('counterWasm invalid, length =', counterWasm.length);
+      }
+
+      // 7. Point 对象
+      const pointWasm = engine.compileClass(buildPointClass());
+      if (pointWasm.length > 0 && WebAssembly.validate(pointWasm)) {
+        const mod = await WebAssembly.compile(pointWasm);
+        const inst = await WebAssembly.instantiate(mod, {});
+        const exports = inst.exports as Record<string, unknown>;
+        const testFn = Object.entries(exports).find(([n]) => n.includes('test'))?.[1];
+        if (typeof testFn === 'function') {
+          const r = (testFn as () => number)();
+          setResults((prev) => [...prev, { name: 'Point.test()', result: String(r) }]);
+        }
+      } else {
+        console.error('pointWasm invalid, length =', pointWasm.length);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
