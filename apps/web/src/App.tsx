@@ -321,6 +321,17 @@ function buildAdd3Class(): Uint8Array {
   ]);
 }
 
+const SUM_ARRAY_B64 = "yv66vgAAADQACAEABFRlc3QHAAEBABBqYXZhL2xhbmcvT2JqZWN0BwADAQAIc3VtQXJyYXkBAAQoSSlJAQAEQ29kZQAhAAIABAAAAAAAAQAJAAUABgABAAcAAAArAAMABAAAAB8avApMAz0DPh0aogATKx0dTxwrHS5gPYQDAaf/7hysAAAAAAAA";
+
+function buildSumArrayClass(): Uint8Array {
+  const binary = atob(SUM_ARRAY_B64);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
 interface RunResult {
   name: string;
   result: string;
@@ -412,6 +423,25 @@ export function App() {
         }
       } else {
         console.error('add3Wasm invalid, length =', add3Wasm.length);
+      }
+
+      // 5. sumArray(10) 和 sumArray(100)
+      const sumArrayWasm = engine.compileClass(buildSumArrayClass());
+      console.log('sumArrayWasm length =', sumArrayWasm.length);
+      const sumArrayValid = sumArrayWasm.length > 0 && WebAssembly.validate(sumArrayWasm);
+      console.log('sumArrayWasm valid =', sumArrayValid);
+      if (sumArrayValid) {
+        const mod = await WebAssembly.compile(sumArrayWasm);
+        const inst = await WebAssembly.instantiate(mod, {});
+        const exports = inst.exports as Record<string, unknown>;
+        const fn = Object.entries(exports).find(([n]) => n.includes('sumArray'))?.[1];
+        if (typeof fn === 'function') {
+          const f = fn as (n: number) => number;
+          setResults((prev) => [...prev, { name: 'sumArray(10)', result: String(f(10)) }]);
+          setResults((prev) => [...prev, { name: 'sumArray(100)', result: String(f(100)) }]);
+        }
+      } else {
+        console.error('sumArrayWasm invalid, length =', sumArrayWasm.length);
       }
     } catch (err) {
       const msg = err instanceof Error ? err.message : String(err);
